@@ -1,7 +1,7 @@
 {
   "name": "Grocery Expense Tracker",
   "short_name": "Groceries",
-  "start_url": "./grocery_app.html",
+  "start_url": "./Rm-Groceries-and-expenses-list",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#28a745",
