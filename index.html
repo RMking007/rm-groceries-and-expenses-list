@@ -106,7 +106,7 @@
     <div class="list-container">
         <div class="list-header">
             <span id="lblHeaderItem">Item</span>
-            <span id="lblHeaderSub">Subtotal</span>
+            <span id="lblHeaderSub">Total Cost</span>
         </div>
         <div id="itemList"></div>
         <div class="total-section">
@@ -128,7 +128,7 @@
         en: {
             title: "Grocery List", share: "Share", clear: "Clear", add: "Add",
             ph_item: "Item Name", ph_price: "Price", h_item: "Item Details",
-            h_sub: "Price", total: "Total", confirm_clear: "Clear everything?",
+            h_sub: "Total Cost", total: "Total", confirm_clear: "Clear everything?",
             alert_empty: "List is empty!", share_header: "🛒 *My Grocery List*",
             share_total: "💰 *Total*", no_unit: "-- No Unit --",
             units: { kg: "kg", g: "g", L: "L", ml: "ml", pcs: "pcs", pkt: "pkt", dz: "doz" }
@@ -176,7 +176,6 @@
         const currentVal = unitSelect.value;
         unitSelect.innerHTML = '';
 
-        // Add blank option first
         let blankOpt = document.createElement('option');
         blankOpt.value = ""; blankOpt.text = t.no_unit;
         unitSelect.appendChild(blankOpt);
@@ -202,7 +201,8 @@
         const unit = document.getElementById('unitInput').value;
         const price = parseFloat(document.getElementById('priceInput').value);
 
-        if (name && !isNaN(price) && !isNaN(qty)) {
+        if (name && !isNaN(price)) {
+            // Price is taken as-is (not multiplied by qty)
             groceryData.push({ id: Date.now(), name, qty, unit, price, checked: false });
             if (!itemHistory.includes(name)) {
                 itemHistory.unshift(name);
@@ -250,8 +250,7 @@
         let grandTotal = 0;
 
         groceryData.forEach(item => {
-            const sub = item.qty * item.price;
-            grandTotal += sub;
+            grandTotal += item.price; // No multiplication
             const uTxt = item.unit === "" ? "" : (t.units[item.unit] || item.unit);
             const row = document.createElement('div');
             row.className = `item-row ${item.checked ? 'is-done' : ''}`;
@@ -259,9 +258,9 @@
                 <div class="check-box ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${item.id})"></div>
                 <div class="item-main" onclick="toggleCheck(${item.id})">
                     <span class="item-name">${item.name}</span>
-                    <span class="item-details">${item.qty} ${uTxt} × ₹${item.price}</span>
+                    <span class="item-details">${item.qty} ${uTxt}</span>
                 </div>
-                <div class="item-subtotal">₹${sub.toLocaleString('en-IN')}</div>
+                <div class="item-subtotal">₹${item.price.toLocaleString('en-IN')}</div>
                 <span class="delete-btn" onclick="deleteItem(${item.id})">✕</span>
             `;
             list.appendChild(row);
@@ -275,10 +274,9 @@
         let msg = `${t.share_header}\n\n`;
         let total = 0;
         groceryData.forEach((item, i) => {
-            const sub = item.qty * item.price;
-            total += sub;
+            total += item.price;
             const uTxt = item.unit === "" ? "" : t.units[item.unit];
-            msg += `${item.checked ? "✅" : "⬜"} *${item.name}* (${item.qty} ${uTxt})\n   ₹${sub}\n`;
+            msg += `${item.checked ? "✅" : "⬜"} *${item.name}* (${item.qty} ${uTxt})\n   ₹${item.price}\n`;
         });
         msg += `\n${t.share_total}: ₹${total}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
@@ -289,4 +287,3 @@
 </script>
 </body>
 </html>
-        
