@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grocery Tracker Pro</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#28a745">
+    <meta name="theme-color" content="#1e7e34">
     <style>
         :root {
             --bg: #f0f2f5;
@@ -55,23 +55,21 @@
         .list-header { display: flex; padding: 10px; font-weight: bold; border-bottom: 2px solid var(--border); color: var(--text-sub); font-size: 0.9rem; }
         .list-header span:first-child { flex: 2; padding-left: 35px; }
         
-        .item-row { display: flex; align-items: center; padding: 12px 10px; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .item-row { display: flex; align-items: center; padding: 12px 10px; border-bottom: 1px solid var(--border); }
         
-        /* Checkbox styling */
         .check-box { width: 22px; height: 22px; border: 2px solid var(--primary); border-radius: 6px; margin-right: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .check-box.checked { background: var(--primary); color: white; }
         .check-box.checked::after { content: '✓'; font-weight: bold; font-size: 14px; }
 
-        .item-main { display: flex; flex-direction: column; flex: 2; }
+        .item-main { display: flex; flex-direction: column; flex: 2; cursor: pointer; }
         .item-row.is-done .item-name { text-decoration: line-through; color: var(--text-sub); opacity: 0.6; }
-        .item-row.is-done .item-subtotal { opacity: 0.5; }
         
         .item-name { font-weight: 600; font-size: 1rem; }
         .item-details { font-size: 0.8rem; color: var(--text-sub); }
-        .item-subtotal { text-align: right; font-family: monospace; font-weight: bold; width: 80px; }
+        .item-subtotal { text-align: right; font-family: monospace; font-weight: bold; width: 85px; }
         
         .total-section { display: flex; justify-content: space-between; padding: 20px 10px; margin-top: 10px; border-top: 2px solid var(--text-main); font-size: 1.4rem; font-weight: 800; }
-        .delete-btn { color: var(--text-sub); cursor: pointer; padding: 5px; margin-left: 10px; opacity: 0.3; }
+        .delete-btn { color: var(--text-sub); cursor: pointer; padding: 5px; margin-left: 10px; opacity: 0.4; }
         .delete-btn:hover { color: var(--danger); opacity: 1; }
     </style>
 </head>
@@ -119,23 +117,10 @@
 </div>
 
 <script>
-    // --- Predefined Grocery List (English & Bengali) ---
-    const masterItems = [
-        "Milk", "Bread", "Eggs", "Rice", "Atta", "Dal", "Sugar", "Salt", "Tea", "Coffee",
-        "Onion", "Potato", "Tomato", "Ginger", "Garlic", "Oil", "Ghee", "Soap", "Shampoo", "Butter",
-        "দুধ", "পাউরুটি", "ডিম", "চাল", "আটা", "ডাল", "চিনি", "লবণ", "চা", "কফি",
-        "পিঁয়াজ", "আলু", "টমেটো", "আদা", "রসুন", "তেল", "ঘি", "সাবান", "শ্যাম্পু", "মাখন"
-    ];
+    const masterItems = ["Milk", "Bread", "Eggs", "Rice", "Atta", "Dal", "Sugar", "Salt", "Tea", "Coffee", "Onion", "Potato", "Tomato", "Ginger", "Garlic", "Oil", "Ghee", "Soap", "Shampoo", "Butter", "দুধ", "পাউরুটি", "ডিম", "চাল", "আটা", "ডাল", "চিনি", "লবণ", "চা", "কফি", "পিঁয়াজ", "আলু", "টমেটো", "আদা", "রসুন", "তেল", "ঘি", "সাবান", "শ্যাম্পু", "মাখন"];
 
     let groceryData = JSON.parse(localStorage.getItem('proGroceries')) || [];
-    let itemHistory = JSON.parse(localStorage.getItem('itemHistory'));
-    
-    // Initialize history with master list if empty
-    if (!itemHistory || itemHistory.length === 0) {
-        itemHistory = masterItems;
-        localStorage.setItem('itemHistory', JSON.stringify(itemHistory));
-    }
-
+    let itemHistory = JSON.parse(localStorage.getItem('itemHistory')) || masterItems;
     let currentLang = localStorage.getItem('appLang') || 'en';
     let currentTheme = localStorage.getItem('appTheme') || 'light';
 
@@ -145,7 +130,7 @@
             ph_item: "Item Name", ph_price: "Price", h_item: "Item Details",
             h_sub: "Price", total: "Total", confirm_clear: "Clear everything?",
             alert_empty: "List is empty!", share_header: "🛒 *My Grocery List*",
-            share_total: "💰 *Total*",
+            share_total: "💰 *Total*", no_unit: "-- No Unit --",
             units: { kg: "kg", g: "g", L: "L", ml: "ml", pcs: "pcs", pkt: "pkt", dz: "doz" }
         },
         bn: {
@@ -153,7 +138,7 @@
             ph_item: "পণ্যের নাম", ph_price: "দাম", h_item: "পণ্যের বিবরণ",
             h_sub: "মূল্য", total: "মোট", confirm_clear: "সব মুছে ফেলবেন?",
             alert_empty: "তালিকা খালি!", share_header: "🛒 *আমার বাজারের তালিকা*",
-            share_total: "💰 *সর্বমোট*",
+            share_total: "💰 *সর্বমোট*", no_unit: "-- ইউনিট ছাড়া --",
             units: { kg: "কেজি", g: "গ্রাম", L: "লিটার", ml: "মিলি", pcs: "টা", pkt: "প্যাকেট", dz: "ডজন" }
         }
     };
@@ -165,6 +150,7 @@
         applyLanguage(currentLang);
         updateHistoryUI();
         renderList();
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
     }
 
     function toggleTheme() {
@@ -189,12 +175,18 @@
         const unitSelect = document.getElementById('unitInput');
         const currentVal = unitSelect.value;
         unitSelect.innerHTML = '';
+
+        // Add blank option first
+        let blankOpt = document.createElement('option');
+        blankOpt.value = ""; blankOpt.text = t.no_unit;
+        unitSelect.appendChild(blankOpt);
+
         Object.keys(t.units).forEach(key => {
             let opt = document.createElement('option');
             opt.value = key; opt.text = t.units[key];
             unitSelect.appendChild(opt);
         });
-        unitSelect.value = currentVal || 'kg';
+        unitSelect.value = currentVal;
     }
 
     function changeLanguage(lang) {
@@ -212,13 +204,11 @@
 
         if (name && !isNaN(price) && !isNaN(qty)) {
             groceryData.push({ id: Date.now(), name, qty, unit, price, checked: false });
-            
             if (!itemHistory.includes(name)) {
                 itemHistory.unshift(name);
                 localStorage.setItem('itemHistory', JSON.stringify(itemHistory));
                 updateHistoryUI();
             }
-            
             saveAndRender();
             document.getElementById('itemInput').value = '';
             document.getElementById('priceInput').value = '';
@@ -228,31 +218,23 @@
 
     function toggleCheck(id) {
         const item = groceryData.find(i => i.id === id);
-        if (item) {
-            item.checked = !item.checked;
-            saveAndRender();
-        }
+        if (item) { item.checked = !item.checked; saveAndRender(); }
     }
 
     function updateHistoryUI() {
-        const dataList = document.getElementById('itemHistory');
-        dataList.innerHTML = '';
-        itemHistory.forEach(name => {
-            let opt = document.createElement('option');
-            opt.value = name;
-            dataList.appendChild(opt);
-        });
+        const dl = document.getElementById('itemHistory');
+        dl.innerHTML = '';
+        itemHistory.forEach(n => { let o = document.createElement('option'); o.value = n; dl.appendChild(o); });
     }
 
     function deleteItem(id) {
-        groceryData = groceryData.filter(item => item.id !== id);
+        groceryData = groceryData.filter(i => i.id !== id);
         saveAndRender();
     }
 
     function clearAll() {
         if (groceryData.length > 0 && confirm(translations[currentLang].confirm_clear)) {
-            groceryData = [];
-            saveAndRender();
+            groceryData = []; saveAndRender();
         }
     }
 
@@ -270,14 +252,14 @@
         groceryData.forEach(item => {
             const sub = item.qty * item.price;
             grandTotal += sub;
-            
+            const uTxt = item.unit === "" ? "" : (t.units[item.unit] || item.unit);
             const row = document.createElement('div');
             row.className = `item-row ${item.checked ? 'is-done' : ''}`;
             row.innerHTML = `
                 <div class="check-box ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${item.id})"></div>
                 <div class="item-main" onclick="toggleCheck(${item.id})">
                     <span class="item-name">${item.name}</span>
-                    <span class="item-details">${item.qty} ${t.units[item.unit]} × ₹${item.price}</span>
+                    <span class="item-details">${item.qty} ${uTxt} × ₹${item.price}</span>
                 </div>
                 <div class="item-subtotal">₹${sub.toLocaleString('en-IN')}</div>
                 <span class="delete-btn" onclick="deleteItem(${item.id})">✕</span>
@@ -290,16 +272,16 @@
     function shareList() {
         if (groceryData.length === 0) return alert(translations[currentLang].alert_empty);
         const t = translations[currentLang];
-        let message = `${t.share_header}\n\n`;
-        let grandTotal = 0;
+        let msg = `${t.share_header}\n\n`;
+        let total = 0;
         groceryData.forEach((item, i) => {
             const sub = item.qty * item.price;
-            grandTotal += sub;
-            const status = item.checked ? "✅" : "⬜";
-            message += `${status} *${item.name}* (${item.qty} ${t.units[item.unit]})\n   ₹${sub}\n`;
+            total += sub;
+            const uTxt = item.unit === "" ? "" : t.units[item.unit];
+            msg += `${item.checked ? "✅" : "⬜"} *${item.name}* (${item.qty} ${uTxt})\n   ₹${sub}\n`;
         });
-        message += `\n${t.share_total}: ₹${grandTotal}`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        msg += `\n${t.share_total}: ₹${total}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     document.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
@@ -307,3 +289,4 @@
 </script>
 </body>
 </html>
+        
