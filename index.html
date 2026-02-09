@@ -106,7 +106,7 @@
     <div class="list-container">
         <div class="list-header">
             <span id="lblHeaderItem">Item</span>
-            <span id="lblHeaderSub">Total Cost</span>
+            <span id="lblHeaderSub">Final Price</span>
         </div>
         <div id="itemList"></div>
         <div class="total-section">
@@ -128,7 +128,7 @@
         en: {
             title: "Grocery List", share: "Share", clear: "Clear", add: "Add",
             ph_item: "Item Name", ph_price: "Price", h_item: "Item Details",
-            h_sub: "Total Cost", total: "Total", confirm_clear: "Clear everything?",
+            h_sub: "Price Paid", total: "Total", confirm_clear: "Clear everything?",
             alert_empty: "List is empty!", share_header: "🛒 *My Grocery List*",
             share_total: "💰 *Total*", no_unit: "-- No Unit --",
             units: { kg: "kg", g: "g", L: "L", ml: "ml", pcs: "pcs", pkt: "pkt", dz: "doz" }
@@ -202,7 +202,7 @@
         const price = parseFloat(document.getElementById('priceInput').value);
 
         if (name && !isNaN(price)) {
-            // Price is taken as-is (not multiplied by qty)
+            // FIX: No math here. Price is stored exactly as entered.
             groceryData.push({ id: Date.now(), name, qty, unit, price, checked: false });
             if (!itemHistory.includes(name)) {
                 itemHistory.unshift(name);
@@ -250,7 +250,8 @@
         let grandTotal = 0;
 
         groceryData.forEach(item => {
-            grandTotal += item.price; // No multiplication
+            // FIX: grandTotal just adds the price directly. No multiplication.
+            grandTotal += item.price; 
             const uTxt = item.unit === "" ? "" : (t.units[item.unit] || item.unit);
             const row = document.createElement('div');
             row.className = `item-row ${item.checked ? 'is-done' : ''}`;
@@ -274,6 +275,7 @@
         let msg = `${t.share_header}\n\n`;
         let total = 0;
         groceryData.forEach((item, i) => {
+            // FIX: Sharing also just sums the prices.
             total += item.price;
             const uTxt = item.unit === "" ? "" : t.units[item.unit];
             msg += `${item.checked ? "✅" : "⬜"} *${item.name}* (${item.qty} ${uTxt})\n   ₹${item.price}\n`;
@@ -287,3 +289,4 @@
 </script>
 </body>
 </html>
+    
